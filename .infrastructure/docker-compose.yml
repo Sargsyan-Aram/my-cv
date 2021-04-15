@@ -1,0 +1,40 @@
+version: "3.7"
+
+services:
+  app:
+    container_name: my_cv_app
+    build:
+      context: ../
+      dockerfile: .infrastructure/Docker/app/Dockerfile
+    volumes:
+      - ./../:/var/www/my-cv
+      - php-nginx-socket:/var/run/php-fpm
+
+  web:
+    container_name: my_cv_web
+    build:
+      context: ../
+      dockerfile: .infrastructure/Docker/web/Dockerfile
+    ports:
+      - $NGINX_PORT:$NGINX_PORT
+    environment:
+      - NGINX_HOST=$NGINX_HOST
+      - NGINX_PORT=$NGINX_PORT
+    volumes:
+      - ../:/var/www/my-cv
+      - php-nginx-socket:/var/run/php-fpm
+
+  db:
+    container_name: my_cv_db
+    image: library/mysql:5.7
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: $DB_PASS
+      MYSQL_DATABASE: $DB_DATABASE
+    volumes:
+    - database-volume:/var/lib/mysql
+
+volumes:
+  php-nginx-socket:
+  database-volume:
